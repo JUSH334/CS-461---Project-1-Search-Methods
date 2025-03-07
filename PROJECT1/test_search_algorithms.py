@@ -1,6 +1,7 @@
 import unittest
 import graph_setup
 import search_algorithms
+import time
 
 class TestSearchAlgorithms(unittest.TestCase):
 
@@ -114,6 +115,64 @@ class TestSearchAlgorithms(unittest.TestCase):
         )
         self.assertIsNone(path)
         self.assertEqual(cost, float('inf'))
+
+class TestSearchTimeout(unittest.TestCase):
+
+    def setUp(self):
+        # Define a larger graph (5000+ nodes) to force long execution time
+        self.graph = {str(i): [str(i + 1)] for i in range(5000)}
+        self.graph["4999"] = []  # The last node has no outgoing edges
+        self.coords = {str(i): (37.0 + i * 0.01, -97.0) for i in range(5000)}  # Fake coordinates
+
+    def test_bfs_timeout(self):
+        """Ensure BFS times out correctly."""
+        start_time = time.perf_counter()
+        path, cost = search_algorithms.bfs(self.graph, "0", "4999", max_time=0.0001)
+        elapsed_time = time.perf_counter() - start_time
+
+        self.assertIsNone(path, "Expected BFS to time out.")
+        self.assertEqual(cost, float('inf'), "Cost should be inf when BFS times out.")
+        self.assertLessEqual(elapsed_time, 0.01, "BFS should have timed out quickly.")
+
+    def test_dfs_timeout(self):
+        """Ensure DFS times out correctly."""
+        start_time = time.perf_counter()
+        path, cost = search_algorithms.dfs(self.graph, "0", "4999", max_time=0.0001)
+        elapsed_time = time.perf_counter() - start_time
+
+        self.assertIsNone(path, "Expected DFS to time out.")
+        self.assertEqual(cost, float('inf'), "Cost should be inf when DFS times out.")
+        self.assertLessEqual(elapsed_time, 0.01, "DFS should have timed out quickly.")
+
+    def test_id_dfs_timeout(self):
+        """Ensure ID-DFS times out correctly."""
+        start_time = time.perf_counter()
+        path, cost = search_algorithms.id_dfs(self.graph, "0", "4999", max_depth=5000, max_time=0.0001)
+        elapsed_time = time.perf_counter() - start_time
+
+        self.assertIsNone(path, "Expected ID-DFS to time out.")
+        self.assertEqual(cost, float('inf'), "Cost should be inf when ID-DFS times out.")
+        self.assertLessEqual(elapsed_time, 0.01, "ID-DFS should have timed out quickly.")
+
+    def test_best_first_search_timeout(self):
+        """Ensure Best-First Search times out correctly."""
+        start_time = time.perf_counter()
+        path, cost = search_algorithms.best_first_search(self.graph, "0", "4999", self.coords, max_time=0.0001)
+        elapsed_time = time.perf_counter() - start_time
+
+        self.assertIsNone(path, "Expected Best-First Search to time out.")
+        self.assertEqual(cost, float('inf'), "Cost should be inf when Best-First Search times out.")
+        self.assertLessEqual(elapsed_time, 0.01, "Best-First Search should have timed out quickly.")
+
+    def test_a_star_search_timeout(self):
+        """Ensure A* Search times out correctly."""
+        start_time = time.perf_counter()
+        path, cost = search_algorithms.a_star_search(self.graph, "0", "4999", self.coords, max_time=0.0001)
+        elapsed_time = time.perf_counter() - start_time
+
+        self.assertIsNone(path, "Expected A* Search to time out.")
+        self.assertEqual(cost, float('inf'), "Cost should be inf when A* Search times out.")
+        self.assertLessEqual(elapsed_time, 0.01, "A* Search should have timed out quickly.")
 
 
 if __name__ == "__main__":
